@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Christmas Cap</title>
+</head>
+<body>
+  <form id="app">
+    <img :src="src" alt="请选择图片">
+    <input type="button" value="浏览图片" @click="open_file">
+    <input 
+      type="file" 
+      accept="image/jpeg, image/png"
+      id="upload_img" 
+      name="upload_img" 
+      style="display: none;" 
+      @change="update_img"
+    />
+    <p>{{ hintText }}</p>
+    <input type="button" value="添加圣诞帽" @click="submit_img">
+  </form>
+</body>
+<script src="vue.min.js"></script>
+<script>
+   var app = new Vue({
+    el: '#app',
+    data: {
+      src: '',
+      hintText: ''
+    },
+    methods: {
+      update_img: function (e) {
+        if (!window.FileReader) {
+          this.hintText = "当前浏览器不支持预览"
+          return ;
+        }
+        var file = e.target.files[0];
+        if (!file.type.match('image.*')) {
+          this.hintText = "图片格式错误"
+          return ;
+        }
+        var vm = this;
+        var reader = new FileReader();
+
+        reader.onload = (function(theFile) {
+          return function(e) {
+            vm.src = e.target.result
+          }
+        })(file);
+        reader.readAsDataURL(file);
+
+        this.hintText = file.name
+      },
+      open_file: function () {
+        return document.getElementById('upload_img').click();
+      },
+      submit_img: function () {
+        var vm = this;
+        var formData = new FormData(vm.$el);
+        vm.hintText = "Uploading..."
+        window.fetch('http://pencilsky.cn:8080/christmas', {
+          method: 'POST',
+          mode: "cors",// solve csrf
+          body:formData
+        }).then(function(response) {
+          if (response.ok) {
+            return response.text();
+          } else {
+            vm.hintText = "Network response was not ok"
+            throw new Error("response error: " + response.statusText)
+          }
+        }).then(function(data) {
+          vm.src = data;
+          vm.hintText = ""
+        }).catch(function (err) {
+          console.log(err);
+        })
+      }
+    }
+   })
+</script>
+</html>
