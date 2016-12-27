@@ -58,7 +58,7 @@
         var vm = this;
         var formData = new FormData(vm.$el);
         vm.hintText = "Uploading..."
-        window.fetch('http://pencilsky.cn:8080/christmas', {
+        window.fetch('https://pencilsky.cn:8080/christmas', {
           method: 'POST',
           mode: "cors",// solve csrf
           body:formData
